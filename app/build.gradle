@@ -21,9 +21,61 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        /**
+         * The `initWith` property lets you copy configurations from other build types,
+         * then configure only the settings you want to change. This one copies the debug build
+         * type, and then changes the manifest placeholder and application ID.
+         */
+        create("staging") {
+            initWith(getByName("debug"))
+            manifestPlaceholders["hostName"] = "internal.example.com"
+            applicationIdSuffix = ".debugStaging"
+        }
+    }
+    // Specifies one flavor dimension.
+    flavorDimensions "api", "mode"
+    productFlavors {
+        demo {
+            // Assigns this product flavor to the "version" flavor dimension.
+            // If you are using only one dimension, this property is optional,
+            // and the plugin automatically assigns all the module's flavors to
+            // that dimension.
+            dimension "mode"
+            applicationIdSuffix = ".demo"
+            versionNameSuffix = "-demo"
+
+        }
+        full{
+            dimension "mode"
+            applicationIdSuffix = ".full"
+            versionNameSuffix = "-full"
+        }
+        minApi24 {
+            dimension "api"
+            minSdkVersion 24
+            // To ensure the target device receives the version of the app with
+            // the highest compatible API level, assign version codes in increasing
+            // value with API level.
+            dimension "api"
+            versionCode 30000 + android.defaultConfig.versionCode
+            versionNameSuffix "-minApi24"
+        }
+
+    }
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        // To check for a certain build type, use variant.buildType.name == "<buildType>"
+        if (names.contains("minApi24") && names.contains("full")) {
+            // Gradle ignores any variants that satisfy the conditions above.
+            setIgnore(true)
         }
     }
     compileOptions {
@@ -46,7 +98,8 @@ android {
     }
 }
 
-dependencies {
+//dependencies {
+    //testImplementation 'junit:junit:4.12'
     dependencies {
         def composeBom = platform('androidx.compose:compose-bom:2022.10.00')
         implementation(composeBom)
@@ -60,15 +113,28 @@ dependencies {
         implementation "com.google.android.material:material:1.7.0"
         implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
         implementation 'androidx.activity:activity-compose:1.6.1'
+        // for unit test
         testImplementation 'junit:junit:4.13.2'
+        testImplementation "app.cash.turbine:turbine:0.12.1"
+        testImplementation "com.google.truth:truth:1.1.3"
+        testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
+
+        // for android unit test
         androidTestImplementation 'androidx.test.ext:junit:1.1.3'
         androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
         androidTestImplementation "androidx.compose.ui:ui-test-junit4"
+
         debugImplementation "androidx.compose.ui:ui-tooling"
 
+        //
+        implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
+
         // coroutines
-        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
         // coroutine Flow
-        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+
+        // Timber
+        implementation 'com.jakewharton.timber:timber:4.7.1'
     }
-}
+//}
