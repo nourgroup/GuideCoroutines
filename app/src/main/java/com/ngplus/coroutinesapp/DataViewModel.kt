@@ -1,7 +1,5 @@
 package com.ngplus.coroutinesapp
 
-import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,9 +9,13 @@ import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 
 import timber.log.Timber
 
-class DataViewModel : ViewModel() {
+class DataViewModel(
+    private val dispatcher: CoroutineDispatcher
+    ) : ViewModel() {
 
     var myData = MutableLiveData<String>()
+    private var _resLD = MutableLiveData<Double>()
+    var resLD = _resLD
 
     private var _stateFlow = MutableStateFlow<String>("")
     var stateFlow: StateFlow<String> = _stateFlow
@@ -92,10 +94,14 @@ class DataViewModel : ViewModel() {
     /**
      *
      */
-    suspend fun computeDistance(lat : Double, long : Double){
-        viewModelScope.launch {
+    suspend fun computeDistance(lat : Double, long : Double) {
+        var res : Double = 0.0
+        viewModelScope.launch(dispatcher){
+        //viewModelScope.launch(Dispatchers.IO){
+        //withContext(Dispatchers.IO){
             delay(1000)
-            val res = Math.sqrt((lat*lat) + (long*long))
+            res = (lat*lat) + (long*long)
+            _resLD.postValue(res)
             println("Coroutine completed $res")
         }
     }

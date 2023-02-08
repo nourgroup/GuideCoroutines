@@ -136,5 +136,7 @@ android {
 
         // Timber
         implementation 'com.jakewharton.timber:timber:4.7.1'
+
+        testImplementation "androidx.arch.core:core-testing:2.1.0"
     }
 //}
