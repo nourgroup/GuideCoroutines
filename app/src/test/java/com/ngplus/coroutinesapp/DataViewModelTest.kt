@@ -54,4 +54,24 @@ class DataViewModelTest {
         println("realTimeDuration $realTimeDuration real ms")
         println("realTimeDuration $virtualStartDuration virtual ms")
     }
+
+    @Test
+    fun testme(){
+        /**
+         * plural sight
+         */
+        val user = User("")
+        user.create{
+            println("$it created ")
+        }
+        user.create{
+            println(" $it created ")
+        }
+        /***/
+        val createListener = { u: User -> println("$u created") }
+        val createListener1 = Created{ print("$it created ") }
+        user.create(createListener)
+        user.create(createListener1)
+
+    }
 }

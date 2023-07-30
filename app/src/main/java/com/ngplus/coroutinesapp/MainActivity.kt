@@ -24,6 +24,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.measureTimeMillis
 
 
@@ -406,10 +407,10 @@ class MainActivity : ComponentActivity() {
          */
         /**
          * 73.
-         * if we want to execute two first coroutines and after execute the other job.
+         * if we want to execute two first coroutines and after execute the other job that depend on other jobs.
          * solution 1; join() the two Job to wait ,j1.join() j2.join() then j3
          * solution 2; put the two jobs inside a parent job then invoke join() ; put j1 & j2 inside launch {}.join()
-         * solution 3: put "coroutineScope{}" as a parent for the two job.
+         * solution 3: put "coroutineScope{}" as a parent for the two first job.
          * note that "coroutineScope{}" is not "supervisorJob{}"
          * a fail of supervisorJob{} won't affect its siblings.
          * //// results ////:
@@ -420,7 +421,7 @@ class MainActivity : ComponentActivity() {
             Starting Task 3
             Task 3 completed
          */
-        val scope2 = CoroutineScope(Job())
+        /*val scope2 = CoroutineScope(Job())
         scope2.launch {
             coroutineScope {
                 /*val j1 = launch {
@@ -441,12 +442,114 @@ class MainActivity : ComponentActivity() {
                 delay(300)
                 Timber.tag("udemy_tuto").d("Task 3 completed")
             }
-        }
+        }*/
         /**
-         * 73.
+         * 113. basic flow builders
          */
+        /*runBlocking {
+            // flow
+            val firstFlow = flowOf(1).collect{
+                println("first flow : $it")
+            }
+            val secondFlow = flowOf(1)
+            secondFlow.collect{
+                println("first flow : $it")
+            }
+            //.asFlow()
+            listOf<Int>(1,3,34,87).asFlow().collect{ emittedValue ->
+                println("asFlow: $emittedValue")
+            }
+            // flow{}
+            flow{
+                delay(2000)
+                emit("item emitted after 2000ms")
+                secondFlow.collect{
+                    emit(it)
+                }
+                // it's equivalent to the one below
+                //emitAll(secondFlow)
+            }.collect{
+                println("flow{} $it")
+            }
+        }*/
+        /**
+         * 116. Basic terminal operators
+         */
+        /*val flow = flow{
+            delay(100)
+            println("Emitting first value")
+            emit(10)
+            println("Emitting second value")
+            emit(200)
+        }
+        runBlocking {
+            val item = flow.first { it > 100 }
+
+            println("Received $item")
+        }
+        // operator raise an exception if list has more than one item
+        // val item1 = flow.single()
+        // flow wait until he received all flow
+        runBlocking {
+            val item = flow.toSet()
+            println("Received $item")
+        }
+        runBlocking {
+            val item = flow.toList()
+            println("Received $item")
+        }
+        runBlocking {
+            //accumulator = 5, emittedItem = 10
+            //accumulator = 15, emittedItem = 100
+            val item = flow.fold(5){ accumulator , emittedItem ->
+                accumulator+emittedItem // 5 + 10 ; 15 + 100
+            }
+            println("Received $item") // 115
+        }*/
+        /**
+         * 117
+         */
+        /*val flow10 = flow{
+            delay(100)
+            emit(1)
+            emit(2)
+            delay(200)
+        }
+        val scope = CoroutineScope(EmptyCoroutineContext)
+        flow10
+            .onEach{
+                Timber.tag("flow_tuto").i("Received $it with launchIn()")
+            }
+            .launchIn(scope)
+        // go to see function implementation
+        scope.launch{
+            flow10
+                .collect{
+                    Timber.tag("flow_tuto").i("$it")
+                }
+        }*/
+        /**
+         * 118
+         */
+        /*dataViewModel.video118()
+        dataViewModel.score.observe(this){
+            score -> Timber.tag("fow_tuto").i("result -> $score")
+        }*/
+
+        /**
+         * plural sight
+         */
+        val user = User("dd")
+        user.create{
+           println("created $it ")
+        }
+        user.create{
+            println("created $it ")
+        }
+        val otherUser : User = user.provideData2() ?: User("")
 
     }
+
     // solution extension function CoroutineScope
     suspend fun doSomeTasks() = supervisorScope{ 
         launch {

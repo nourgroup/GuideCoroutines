@@ -1,5 +1,7 @@
 package com.ngplus.coroutinesapp
 
+import android.view.Display
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import timber.log.Timber
 
 class DataViewModel(
-    private val dispatcher: CoroutineDispatcher
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
     ) : ViewModel() {
 
     var myData = MutableLiveData<String>()
@@ -70,6 +72,7 @@ class DataViewModel(
         }.filter { it.mod(2) == 1 }
 
         return flow1.zip(flow2){ a,b -> "$a $b" }
+                // si view5 seconds
             .stateIn(
                 scope = viewModelScope,
                 initialValue = "",
@@ -104,5 +107,32 @@ class DataViewModel(
             _resLD.postValue(res)
             println("Coroutine completed $res")
         }
+    }
+    /**
+     * 118
+     */
+    private var _score = MutableLiveData<String>()
+    val score get() = _score
+    fun video118(){
+        val flow1 = flow {
+            emit(121)
+            delay(20_000)
+            emit(200)
+        }
+        /*viewModelScope.launch(dispatcher) {
+            flow1.collect{
+                score.value = "$it"
+            }
+        }*/
+        // life cycle operations
+        flow1
+            .onStart{
+                Timber.tag("").i("")
+            }
+            .onCompletion{
+                Timber.tag("").i("")
+            }
+            .onEach{ score.value = "$it" }
+            .launchIn(viewModelScope) 
     }
 }
